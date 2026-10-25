@@ -18,14 +18,14 @@ Open http://localhost:3000. Live feeds need outbound HTTPS access.
 ## Features
 
 - NEA regional 1-hour PM2.5 and 24-hour PSI, location selection and optional phone geolocation.
-- Hourly history, four-week comparisons, CSV export and official period outlooks.
+- Hourly history, four-week comparisons, CSV export and agency publication references.
 - Activity planning, browser-local saved plans, calendar rechecks and purifier sizing.
 - Interactive Marina Bay geometry, animated water/haze, Singapore time and weather themes.
 - Progressive loading, explicit stale/partial data, independent retries and accessible controls.
 
 ## Architecture
 
-Vanilla HTML/CSS/JavaScript; a Cloudflare Worker serves the app and proxies official NEA/data.gov.sg, MSS and ASMC sources. No server-side personal accounts. Preferences and plans stay in browser storage.
+Vanilla HTML/CSS/JavaScript; a Cloudflare Worker serves the app and uses licensed NEA/MSS datasets through data.gov.sg APIs. Agency webpage text/images are not scraped. No server-side personal accounts. Preferences and plans stay in browser storage.
 
 Edit `src/`. `scripts/compose.mjs` generates `worker/index.js`; the build packages `dist/server/index.js`. Generated bundles are reproducible from source. `.openai/hosting.json` identifies the existing ChatGPT Sites deployment.
 
@@ -34,6 +34,10 @@ This GitHub repository stores source and runs checks. Production remains hosted 
 ## Blender
 
 Run `node scripts/export-scene.mjs` to generate the mesh JSON, then follow `assets/blender/README.md`. Blender was unavailable during development; the browser renderer and mesh are tested, the Blender import is syntax-checked only.
+
+## Data use and privacy
+
+See [data-use review](docs/DATA-USAGE-REVIEW.md) for licence attribution, removed webpage scrapers, privacy handling and remaining operator obligations. Agency datasets have their own licence; this repository does not grant rights to third-party material.
 
 ## Verification
 

@@ -57,7 +57,7 @@ export function hazeRegionalComparison(days,dates){
 }
 export function hazeDailyCsv(days,dates,metric='pm25'){
  const byDate=new Map((days||[]).map(d=>[d.date,d]));
- const rows=[['Singapore date','Region','Metric','Unit','Mean of available hourly readings','Peak','Hourly readings','Band 1 count','Band 2 count','Band 3 count','Band 4 count','Band 5 count']];
- for(const date of dates)for(const region of ['north','south','east','west','central']){const d=byDate.get(date)?.regions?.[region];rows.push([date,region,metric==='pm25'?'1-hour PM2.5':'rolling 24-hour PSI',metric==='pm25'?'ug/m3':'index',d?.count?(d.sum/d.count).toFixed(3):'',d?.max??'',d?.count??0,...Array.from({length:5},(_,i)=>d?.bands?.[i]??'')]);}
+ const rows=[['Singapore date','Region','Metric','Unit','Mean of available hourly readings','Peak','Hourly readings','Band 1 count','Band 2 count','Band 3 count','Band 4 count','Band 5 count','Source','Dataset API','Licence','Exported at UTC']];
+ for(const date of dates)for(const region of ['north','south','east','west','central']){const d=byDate.get(date)?.regions?.[region];rows.push([date,region,metric==='pm25'?'1-hour PM2.5':'rolling 24-hour PSI',metric==='pm25'?'ug/m3':'index',d?.count?(d.sum/d.count).toFixed(3):'',d?.max??'',d?.count??0,...Array.from({length:5},(_,i)=>d?.bands?.[i]??''),'NEA via data.gov.sg','https://api-open.data.gov.sg/v2/real-time/api/'+metric,'https://data.gov.sg/open-data-licence',new Date().toISOString()]);}
  return rows.map(row=>row.join(',')).join('\r\n')+'\r\n';
 }

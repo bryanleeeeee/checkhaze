@@ -100,13 +100,11 @@ function renderChart(){
 }
 function renderOutlook(){
  const out=state.outlook;if(!out)return;
- const forecastDate=out.forecastDate?new Date(out.forecastDate+'T00:00:00+08:00'):null;const singaporeToday=new Date(Date.now()+8*3600000).toISOString().slice(0,10);const currentGraphic=out.forecastGraphic&&out.forecastDate>=singaporeToday;
- $('#forecastTitle').textContent=forecastDate?'Forecast for '+dateLabel(forecastDate,{weekday:'short',day:'numeric',month:'short'}):'The next 24 hours';
- $('#forecastIntro').textContent=currentGraphic?'NEA’s published 24-hour PSI forecast. Use the accompanying official health advisory for next-day plans.':out.forecastGraphic?'The last published graphic is dated '+dateLabel(forecastDate)+'. Check NEA for an updated forecast before planning.':'A current next-day forecast graphic is not available from the source. Check NEA for the latest advisory.';
- $('#forecastGraphic').innerHTML=out.forecastGraphic?'<img src="'+esc(out.forecastGraphic)+'" alt="NEA official PSI forecast for '+esc(out.forecastDate)+'; follow the official forecast link for the full accessible advisory." loading="lazy">':'<div class="empty">No forecast graphic available.<br>Open NEA’s latest advisory below.</div>';
- const img=$('#forecastGraphic img');if(img)img.onerror=()=>$('#forecastGraphic').innerHTML='<div class="empty">The official image could not load.<br>Open NEA’s latest forecast below.</div>';
- const region=out.regional;$('#regionalOutlook').innerHTML=region?'<p>'+esc(region.text)+'</p><span class="outlook-date">'+esc(region.updated?'Source updated '+region.updated:'Source time unavailable')+' · retrieved '+esc(time(out.fetchedAt))+' SGT</span>':'<p>The regional haze outlook is temporarily unavailable. Open NEA’s official page for the latest update.</p>';
- $('#situation').innerHTML=out.situation?'<p>'+esc(out.situation.text)+'</p><p class="small">'+esc(out.situation.updated?'Source updated '+out.situation.updated:'Source time unavailable')+'</p>':'<p>The regional situation update is temporarily unavailable.</p>';
+ $('#forecastTitle').textContent='Next-day haze advisory';
+ $('#forecastIntro').textContent='Check the latest PSI forecast directly on NEA’s haze website. Forecast graphics are not reproduced here.';
+ $('#forecastGraphic').innerHTML='<div class="empty">Official advisory website: <strong>haze.gov.sg</strong><br>Enter this address in your browser for the latest forecast.</div>';
+ $('#regionalOutlook').innerHTML='<p>For official regional outlooks, visit haze.gov.sg. This app does not publish numeric multi-day haze predictions.</p>';
+ $('#situation').innerHTML='<p>For regional satellite and hotspot reports, visit asmc.asean.org in your browser. Agency text and images are not reproduced here.</p>';
  const weather=out.weather;$('#weatherTime').textContent=weather?'Issued '+dateLabel(weather.timestamp)+' · '+time(weather.timestamp)+' SGT':'';
  const days=(weather?.forecasts||[]).filter(d=>d.timestamp&&d.timestamp.slice(0,10)>=singaporeToday);
  $('#weatherGrid').innerHTML=days.length?days.map(d=>'<article class="weather-day"><h3>'+esc(d.day)+'</h3><div class="date">'+esc(dateLabel(d.timestamp))+'</div>'+icon(/showers|rain|thunder/i.test(d.forecast?.text||'')?'rain':/cloud/i.test(d.forecast?.text||'')?'cloud':'sun')+'<strong>'+esc(d.temperature?.high??'—')+'°<small>'+esc(d.temperature?.low??'—')+'°</small></strong><p>'+esc(d.forecast?.summary||d.forecast?.text||'Forecast unavailable')+'</p><div class="wind">Wind '+esc(d.wind?.direction||'—')+' · '+esc(d.wind?.speed?.low??'—')+'–'+esc(d.wind?.speed?.high??'—')+' km/h</div></article>').join(''):'<div class="empty">The four-day weather forecast is temporarily unavailable.</div>';

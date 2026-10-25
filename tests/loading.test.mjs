@@ -13,3 +13,7 @@ vm.runInContext('memo.clear()',ctx);fail='pm25';assert.equal((await req('current
 vm.runInContext('memo.clear()',ctx);bad=true;assert.equal((await req('current-pm25')).status,503);bad=false;assert.equal((await req('current-pm25')).status,200);
 vm.runInContext('memo.clear()',ctx);const before=calls;await Promise.all([req('current-pm25'),req('current-pm25')]);assert.equal(calls-before,2);const completed=calls;await req('current-pm25');assert.equal(calls,completed);assert.equal(vm.runInContext('[...memo.values()].some(x=>x.promise)',ctx),false);
 console.log('PASS all air/weather/history routes and eight weekly chunks; invalid parameters; partial history uncached and retry recovers; source errors; empty payloads; independent concurrent I/O and completed-value caching.');
+const beforeExtended=calls;const extended=await (await req('extended-outlook')).json();assert.equal(extended.licensedApiOnly,true);assert.equal(calls,beforeExtended,'Extended outlook must not scrape agency webpages');
+assert(!backend.includes("get('https://www.haze.gov.sg"));assert(!backend.includes('get(u,false)'));
+const html=await readFile('src/index.html','utf8');assert(html.includes('Singapore Open Data Licence v1.0'));assert(html.includes('not affiliated with or endorsed'));assert(html.includes('Privacy and your choices'));
+console.log('PASS licensed API-only outlook, no agency webpage fetch, visible attribution and privacy notices.');

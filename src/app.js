@@ -117,11 +117,11 @@ function validFeed(path,data){
  if(path==='history')return Array.isArray(data.pm25)&&Array.isArray(data.psi)&&Array.isArray(data.errors)&&(data.pm25.length+data.psi.length)>0;
  if(path==='local-weather')return Array.isArray(data.forecast?.forecasts)&&Number.isFinite(Date.parse(data.forecast?.valid_period?.end));
  if(path==='outlook')return !!(data.weather||data.regional||data.situation);
- if(path==='extended-outlook')return !!(data.fortnight||data.seasonal||data.subseasonal);
+ if(path==='extended-outlook')return data.licensedApiOnly===true||!!(data.fortnight||data.seasonal||data.subseasonal);
  if(path.startsWith('weeks?'))return Array.isArray(data.days)&&Array.isArray(data.errors)&&typeof data.today==='string';
  return true;
 }
-function feedPartial(path,data){return !!data.errors?.length||(path==='extended-outlook'&&(!data.fortnight||!data.seasonal||!data.subseasonal))||(path==='outlook'&&(!data.weather||!data.regional||!data.situation))||(path.startsWith('current-')&&regions.some(r=>!hazeNumber(data.item.readings[path.endsWith('pm25')?'pm25_one_hourly':'psi_twenty_four_hourly']?.[r])));}
+function feedPartial(path,data){return !!data.errors?.length||(path==='extended-outlook'&&!data.licensedApiOnly&&(!data.fortnight||!data.seasonal||!data.subseasonal))||(path==='outlook'&&(data.licensedApiOnly?!data.weather:(!data.weather||!data.regional||!data.situation)))||(path.startsWith('current-')&&regions.some(r=>!hazeNumber(data.item.readings[path.endsWith('pm25')?'pm25_one_hourly':'psi_twenty_four_hourly']?.[r])));}
 async function requestFeed(path,timeout=45000){
  if(activeRequests.has(path))return activeRequests.get(path);
  const task=(async()=>{dataHealth.set(path,{status:'loading',checked:null});renderDataHealth();try{const r=await fetch('/api/'+path,{signal:AbortSignal.timeout(timeout),cache:'no-store'});if(!r.ok)throw new Error(r.status===429?'Source is busy. Try again shortly.':'Source could not be reached.');const data=await r.json();if(!validFeed(path,data))throw new Error('Source returned incomplete data.');dataHealth.set(path,{status:feedPartial(path,data)?'partial':'loaded',checked:new Date().toISOString()});return data;}catch(e){dataHealth.set(path,{status:'error',checked:new Date().toISOString(),message:e.name==='TimeoutError'||e.name==='AbortError'?'Request timed out. Please retry.':'Could not load this feed. Please retry.'});throw e;}finally{activeRequests.delete(path);renderDataHealth();}})();
@@ -130,7 +130,7 @@ async function requestFeed(path,timeout=45000){
 async function api(path){return requestFeed(path,path==='history'?65000:45000);}
 function renderDataHealth(){
  const host=$('#feedStatusList');if(!host)return;
- const feeds=[['current-pm25','1-hour PM2.5'],['current-psi','24-hour PSI'],['local-weather','Local 2-hour weather'],['history','Hourly history'],['outlook','Haze & four-day weather'],['extended-outlook','Multi-week outlooks']];
+ const feeds=[['current-pm25','1-hour PM2.5'],['current-psi','24-hour PSI'],['local-weather','Local 2-hour weather'],['history','Hourly history'],['outlook','Four-day weather API'],['extended-outlook','Agency publication references']];
  host.innerHTML=feeds.map(([path,label])=>{const h=dataHealth.get(path),metric=path.startsWith('current-')?path.slice(8):null;const stamp=metric?state.current?.[metric]?.timestamp:null;const status=h?.status==='loaded'&&metric&&!fresh(metric)?'delayed':h?.status||'waiting';return '<article class="feed-row"><div><strong>'+label+'</strong><small>'+(stamp?'Observed '+esc(dateLabel(stamp)+' '+time(stamp))+' SGT':h?.checked?'Checked '+esc(time(h.checked))+' SGT':'Waiting for first request')+'</small></div><span class="feed-state '+status+'">'+({loaded:'Loaded',loading:'Loading…',error:'Unavailable',partial:'Partial data',delayed:'Delayed',waiting:'Waiting'}[status])+'</span><button class="mini-button" data-retry-feed="'+path+'" '+(status==='loading'?'disabled':'')+' aria-label="Retry '+label+'">Retry</button></article>';}).join('');
  const issues=[...dataHealth.values()].filter(x=>['error','partial'].includes(x.status)).length;$('#dataStatusSummary').textContent=issues?issues+' feeds need attention':'Sources & loading status';
  $$('[data-retry-feed]').forEach(b=>b.onclick=()=>{const p=b.dataset.retryFeed;if(p.startsWith('current-'))refresh();else if(p==='history')loadHistory();else if(p==='local-weather')loadLocalWeather();else if(p==='outlook')loadOutlook();else loadExtended();});

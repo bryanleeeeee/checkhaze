@@ -100,6 +100,7 @@ function renderChart(){
 }
 function renderOutlook(){
  const out=state.outlook;if(!out)return;
+ const singaporeToday=new Date(Date.now()+8*3600000).toISOString().slice(0,10);
  $('#forecastTitle').textContent='Next-day haze advisory';
  $('#forecastIntro').textContent='Check the latest PSI forecast directly on NEA’s haze website. Forecast graphics are not reproduced here.';
  $('#forecastGraphic').innerHTML='<div class="empty">Official advisory website: <strong>haze.gov.sg</strong><br>Enter this address in your browser for the latest forecast.</div>';

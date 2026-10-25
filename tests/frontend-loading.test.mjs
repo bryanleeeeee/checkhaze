@@ -11,3 +11,8 @@ fetcher=async()=>({ok:true,json:async()=>({pm25:[{timestamp:reading.timestamp}],
 fetcher=async()=>({ok:true,json:async()=>({pm25:[{}],psi:[{}],errors:[]})});await vm.runInContext('requestFeed("history")',ctx);assert.equal(vm.runInContext('dataHealth.get("history").status',ctx),'loaded');
 vm.runInContext('state.current.pm25.timestamp="2020-01-01T00:00:00Z"',ctx);assert(!vm.runInContext('fresh("pm25")',ctx));
 console.log('PASS progressive rendering, independent source failure, timeout, invalid empty response, partial response, retry recovery and stale observations.');
+const tomorrow=new Date(Date.now()+8*3600000+86400000).toISOString().slice(0,10);
+ctx.forecastFixture={licensedApiOnly:true,weather:{timestamp:new Date().toISOString(),forecasts:[{day:'Tomorrow',timestamp:tomorrow+'T00:00:00+08:00',forecast:{text:'Thundery Showers',summary:'Afternoon thundery showers'},temperature:{high:33,low:24},wind:{direction:'SW',speed:{low:5,high:15}}}]}};
+vm.runInContext('state.outlook=forecastFixture;renderOutlook()',ctx);assert.match(node('#weatherGrid').innerHTML,/Afternoon thundery showers/);assert.match(node('#weatherGrid').innerHTML,/33°/);
+vm.runInContext('state.outlook={licensedApiOnly:true,weather:null};renderOutlook()',ctx);assert.match(node('#weatherGrid').innerHTML,/temporarily unavailable/);
+console.log('PASS complete live-style four-day forecast renders after API-only outlook changes; missing weather stays explicit.');

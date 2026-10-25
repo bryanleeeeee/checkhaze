@@ -1,0 +1,13 @@
+import vm from 'node:vm';import {readFile} from 'node:fs/promises';import assert from 'node:assert/strict';
+const nodes=new Map();const node=k=>{if(!nodes.has(k))nodes.set(k,{value:'',textContent:'',innerHTML:'',dataset:{},style:{setProperty(){}},classList:{toggle(){},add(){},remove(){}},addEventListener(){},setAttribute(){},removeAttribute(){},click(){}});return nodes.get(k);};
+let fetcher;const ctx=vm.createContext({Date,Map,Set,Promise,URL,AbortSignal,Intl,TextEncoder,console,document:{querySelector:node,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},navigator:{},location:{origin:'https://test.local'},localStorage:{getItem(){return null;},setItem(){},removeItem(){}},setInterval(){},setTimeout(){},clearTimeout(){},fetch:(...args)=>fetcher(...args)});
+vm.runInContext((await readFile('src/toolkit-core.js','utf8')).replace(/^export /gm,'')+'\n'+await readFile('src/app.js','utf8')+'\nrenderNow=()=>{};',ctx);
+const reading={timestamp:new Date().toISOString(),readings:{pm25_one_hourly:{north:42,south:42,east:42,west:42,central:42}}};let finish;
+fetcher=async url=>url.endsWith('psi')?new Promise(resolve=>finish=()=>resolve({ok:false,status:503})):({ok:true,json:async()=>({item:reading})});
+const pending=vm.runInContext('loadCurrent()',ctx);await new Promise(resolve=>setImmediate(resolve));assert.equal(vm.runInContext('reading("pm25")',ctx),42);assert(vm.runInContext('fresh("pm25")',ctx));finish();await pending;assert(!vm.runInContext('fresh("psi")',ctx));
+fetcher=async()=>{throw new DOMException('timeout','TimeoutError');};await assert.rejects(vm.runInContext('requestFeed("history")',ctx));assert.equal(vm.runInContext('dataHealth.get("history").status',ctx),'error');
+fetcher=async()=>({ok:true,json:async()=>({pm25:[],psi:[],errors:[]})});await assert.rejects(vm.runInContext('requestFeed("history")',ctx));
+fetcher=async()=>({ok:true,json:async()=>({pm25:[{timestamp:reading.timestamp}],psi:[],errors:['psi']})});await vm.runInContext('requestFeed("history")',ctx);assert.equal(vm.runInContext('dataHealth.get("history").status',ctx),'partial');
+fetcher=async()=>({ok:true,json:async()=>({pm25:[{}],psi:[{}],errors:[]})});await vm.runInContext('requestFeed("history")',ctx);assert.equal(vm.runInContext('dataHealth.get("history").status',ctx),'loaded');
+vm.runInContext('state.current.pm25.timestamp="2020-01-01T00:00:00Z"',ctx);assert(!vm.runInContext('fresh("pm25")',ctx));
+console.log('PASS progressive rendering, independent source failure, timeout, invalid empty response, partial response, retry recovery and stale observations.');

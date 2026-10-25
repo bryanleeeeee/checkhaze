@@ -1,0 +1,11 @@
+{
+  "name": "haze-sg",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "validate": "node scripts/validate-artifact.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test": "node tests/toolkit.test.mjs && node tests/loading.test.mjs && node tests/frontend-loading.test.mjs && node tests/scene3d.test.mjs"
+  }
+}

@@ -1,0 +1,10 @@
+dist/
+site.tar.gz
+node_modules/
+.env
+.env.*
+!.env.example
+worker/index.js
+assets/blender/singapore-mesh.json
+assets/blender/*.blend
+__pycache__/

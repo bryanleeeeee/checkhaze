@@ -1,4 +1,5 @@
 const PAGE = __PAGE_JSON__;
+const SOCIAL_IMAGE_BASE64="__SOCIAL_IMAGE_BASE64__";
 const API = 'https://api-open.data.gov.sg/v2/real-time/api/';
 const memo = new Map();
 // Share only completed JSON values. Pending I/O belongs to its Worker request.
@@ -68,6 +69,7 @@ export default {
   const url=new URL(request.url);
   const headers={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'geolocation=(self)', 'X-Frame-Options':'SAMEORIGIN'};
   if(url.pathname==='/')return new Response(PAGE,{headers:{...headers,'content-type':'text/html; charset=utf-8','cache-control':'no-cache'}});
+  if(url.pathname==='/social/checkhaze-card-v1.png')return new Response(Uint8Array.from(atob(SOCIAL_IMAGE_BASE64),c=>c.charCodeAt(0)),{headers:{...headers,'Content-Type':'image/png','Cache-Control':'public,max-age=86400'}});
   if(url.pathname==='/favicon.svg')return new Response('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="#133a37"/><path d="M14 23h27a6 6 0 1 0-6-6M14 32h37M14 41h20a6 6 0 1 1-6 6" fill="none" stroke="#cff58a" stroke-width="5" stroke-linecap="round"/></svg>',{headers:{'content-type':'image/svg+xml'}});
   if(url.pathname==='/api/weeks'){const metric=url.searchParams.get('metric'),chunk=Number(url.searchParams.get('chunk'));if(!['pm25','psi'].includes(metric)||!Number.isInteger(chunk)||chunk<0||chunk>3)return Response.json({error:'Invalid history request'},{status:400});try{const key='weeks:'+hazeSgDay()+':'+metric+':'+chunk;const data=await cached(key,600000,()=>weeklyChunk(metric,chunk));if(data.errors.length)memo.delete(key);return Response.json(data,{headers:{...headers,'Cache-Control':data.errors.length?'no-store':'public,max-age=300'}});}catch{return Response.json({error:'Weekly history is temporarily unavailable.'},{status:503});}}
   const routes={'/api/current-pm25':[60000,()=>currentMetric('pm25')],'/api/current-psi':[60000,()=>currentMetric('psi')],'/api/current':[240000,current],'/api/history':[600000,history],'/api/outlook':[900000,outlook],'/api/local-weather':[240000,localWeather],'/api/extended-outlook':[3600000,extendedOutlook]};

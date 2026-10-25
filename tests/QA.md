@@ -16,19 +16,4 @@ Coverage: progressive independent air readings, source failure, timeout, empty r
 
 Mobile preview: 375 px content and scroll width, source panel and retry controls inspected. No production signed-in end-to-end claim.
 
-
-## Public custom-domain E2E — 25 October 2026, approximately 15:14–15:18 SGT
-
-- https://checkhaze.com loaded over HTTPS with the latest brighter UI.
-- PM2.5 and PSI loaded independently; initial missing PSI recovered. All five PM2.5 regions populated.
-- Selecting Tampines updated the selected place, East region scene and activity planner.
-- Playground preset and Save to my day created a local saved activity and exposed calendar recheck.
-- Living-room preset produced 325 m³/h from 25 m² × 2.6 m × 5 ACH.
-- Air quality, My day, Haze outlook and Haze guide navigation worked.
-- Lighting keyboard selection switched to Evening preview; Auto restored; pause button changed to Play motion.
-- Local two-hour weather, hourly history and multi-week outlooks loaded.
-- Combined next-day/four-day outlook initially unavailable; Retry returned partial data. External source completeness is not guaranteed or reported as a pass.
-- Four-week history loaded progressively, with missing dates visible and CSV enabled once observations arrived.
-- Automated suite passed: toolkit calculations, all route handlers, invalid parameters, upstream/empty/partial responses, retry recovery, independent concurrent Worker I/O, completed-value caching, frontend timeouts/stale data/deduplication, geometry, PM band boundaries, time/weather themes and previews. Build and ESM validation passed.
-- Mobile layout was checked at 375px in the preceding design pass without horizontal overflow.
-- Not exercised in this cloud browser: real phone GPS consent/location, notification delivery, actual GPU WebGL (Canvas fallback rendered), and Blender execution.
+Final browser result: history completed with PM2.5 28/28 days and PSI 28/28 days, 100% completed-date coverage. Outlook retry recovered the four-day weather forecast; next-day haze graphic and regional narrative remained unavailable from the official source.
